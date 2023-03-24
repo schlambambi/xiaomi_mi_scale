@@ -239,13 +239,13 @@ try:
                 logging.warning(f"MQTT Discovery enabled but no MQTT Prefix provided, defaulting to 'homeassistant'...")
                 MQTT_DISCOVERY_PREFIX = "homeassistant"
             pass
-        try:
-            HCI_DEV = data["HCI_DEV"].lower()
-            logging.debug(f"HCI_DEV read from config: {HCI_DEV}")
-        except:
-            HCI_DEV = "hci0"
-            logging.debug(f"HCI_DEV defaulted to: {HCI_DEV}")
-            pass
+#        try:
+#            HCI_DEV = data["HCI_DEV"].lower()
+#            logging.debug(f"HCI_DEV read from config: {HCI_DEV}")
+#        except:
+#            HCI_DEV = "hci0"
+#            logging.debug(f"HCI_DEV defaulted to: {HCI_DEV}")
+#            pass
         try:
             BLUEPY_PASSIVE_SCAN = data["BLUEPY_PASSIVE_SCAN"]
             logging.debug(f"BLUEPY_PASSIVE_SCAN read from config: {BLUEPY_PASSIVE_SCAN}")
@@ -272,7 +272,7 @@ try:
                 raise
         OLD_MEASURE = None
         logging.info(f"Config Loaded...")
-
+        logging.info("Test")
 # Failed to open options.json
 except FileNotFoundError as error:
     DEBUG_LEVEL = DEFAULT_DEBUG_LEVEL
@@ -291,8 +291,15 @@ async def main(MISCALE_MAC):
     stop_event = asyncio.Event()
 
     # TODO: add something that calls stop_event.set()
-
+    logging.info("Hier")
     def callback(device, advertising_data):
+        if device is not None:
+            logging.info(f"Found device with MAC address11: {device.address}")
+        else:
+            logging.info("Device not found11")         
+        logging.info("Hier1") 
+        device = await scanner.find_device_by_address(MISCALE_MAC)
+        logging.info("Hier2")
         global OLD_MEASURE
         if device.address.lower() == MISCALE_MAC:
             logging.debug(f"miscale found, with advertising_data: {advertising_data}")
@@ -335,23 +342,25 @@ async def main(MISCALE_MAC):
             except:
                 pass
         pass
-
-    async with BleakScanner(
-        callback,
-        ) as scanner:
-        ...
-        # Important! Wait for an event to trigger stop, otherwise scanner
-        # will stop immediately.
-        await stop_event.wait()
-
+        device = await scanner.find_device_by_address(MISCALE_MAC)
+#        scanner = BleakScanner()
+#       stop_event = asyncio.Event()
+#        device = await scanner.find_device_by_address(device_identifier:MISCALE_MAC, on_device_found=callback)
+#       scanner = BleakScanner(on_device_found=callback)
+        if device is not None:
+            logging.info(f"Found device with MAC address: {device.address}")
+        else:
+            logging.info("Device not found")            
+        await stop_event.wait()    
         
 if __name__ == "__main__":
     if MQTT_DISCOVERY:
         MQTT_discovery()
     logging.info(f"-------------------------------------")
-    logging.info(f"Initialization Completed, Waiting for Scale...")
+    logging.info(f"Initialization completed, step on scale to wake it up and get a weight value sent... Make sure the scale is within reach...")
     try:
-        asyncio.run(main(MISCALE_MAC.lower()))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main(MISCALE_MAC))
     except Exception as error:
         logging.error(f"Unable to connect to Bluetooth: {error}")
         pass
