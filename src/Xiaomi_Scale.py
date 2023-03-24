@@ -338,7 +338,6 @@ async def main(MISCALE_MAC):
 
     async with BleakScanner(
         callback,
-        device=f"{HCI_DEV}"
         ) as scanner:
         ...
         # Important! Wait for an event to trigger stop, otherwise scanner
