@@ -342,16 +342,18 @@ async def main(MISCALE_MAC):
             except:
                 pass
         pass
-        device = await scanner.find_device_by_address(MISCALE_MAC)
-#        scanner = BleakScanner()
-#       stop_event = asyncio.Event()
-#        device = await scanner.find_device_by_address(device_identifier:MISCALE_MAC, on_device_found=callback)
-#       scanner = BleakScanner(on_device_found=callback)
-        if device is not None:
-            logging.info(f"Found device with MAC address: {device.address}")
-        else:
-            logging.info("Device not found")            
-        await stop_event.wait()    
+        
+        async def run():
+            device = await scanner.find_device_by_address(MISCALE_MAC)
+#           scanner = BleakScanner()
+#           stop_event = asyncio.Event()
+#           device = await scanner.find_device_by_address(device_identifier:MISCALE_MAC, on_device_found=callback)
+            scanner = BleakScanner(on_device_found=callback)
+            if device is not None:
+                logging.info(f"Found device with MAC address: {device.address}")
+            else:
+                logging.info("Device not found")            
+            await stop_event.wait()    
         
 if __name__ == "__main__":
     if MQTT_DISCOVERY:
